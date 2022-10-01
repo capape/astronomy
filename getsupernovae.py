@@ -4,9 +4,9 @@
 
 import urllib.request, urllib.parse, urllib.error
 from bs4 import BeautifulSoup
-from astropy.coordinates import SkyCoord, Distance
+from astropy.coordinates import SkyCoord
 import ssl
-
+from datetime import datetime, timedelta
 class Supernova:
     def __init__(self, date, mag, host, name, ra, decl, link, constellation, coordinates):
         self.name = name
@@ -31,6 +31,9 @@ def printSupernova(data):
 
 
 def selectSupernovas(trs, maxMag, fromDate):
+
+    print ('Selecting supernovae from: ', fromDate, ' to now and magnitud less than', maxMag)
+    print
     supernovas = []
     for tr in trs:
         if tr.contents[0].name == 'td':
@@ -65,7 +68,9 @@ soup = BeautifulSoup(html, 'html.parser')
 # Find all supernovae rows
 trs = soup('tr')
 
-supernovas = selectSupernovas(trs, '18', '2022/09/15')
+fromDate = datetime.now() + timedelta(days = -15);
+
+supernovas = selectSupernovas(trs, '18', fromDate.strftime('%Y/%m/%d'))
 
 supernovas.sort(key = lambda x : x.date, reverse=True)
 
