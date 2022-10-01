@@ -7,6 +7,7 @@ from bs4 import BeautifulSoup
 from astropy.coordinates import SkyCoord
 import ssl
 from datetime import datetime, timedelta
+import sys
 class Supernova:
     def __init__(self, date, mag, host, name, ra, decl, link, constellation, coordinates):
         self.name = name
@@ -28,6 +29,7 @@ def printSupernova(data):
         print('     Const:', data.constellation,', Host:', data.host, ', Name:', data.name)
         print('     RA:', data.ra, ', DECL.', data.decl)
         print('     Goto: ', data.link)
+        print('')
 
 
 def selectSupernovas(trs, maxMag, fromDate):
@@ -56,6 +58,11 @@ def selectSupernovas(trs, maxMag, fromDate):
     
 
 
+ 
+if len(sys.argv) > 3:
+    raise ValueError('Usage: getsupernovae.py maxMag lastDays')
+ 
+
 
 # Ignore ssl cert errors
 ctx = ssl.create_default_context()
@@ -68,9 +75,20 @@ soup = BeautifulSoup(html, 'html.parser')
 # Find all supernovae rows
 trs = soup('tr')
 
-fromDate = datetime.now() + timedelta(days = -15);
+mag='18'
+deltaDays=-15
+if (len(sys.argv)==3):
+    deltaDays= (-1 * int(sys.argv[2]))
+    mag=sys.argv[1]
+elif (len(sys.argv)==2):
+    mag=sys.argv[1]
 
-supernovas = selectSupernovas(trs, '18', fromDate.strftime('%Y/%m/%d'))
+
+fromDate = datetime.now() + timedelta(days = deltaDays);
+
+
+
+supernovas = selectSupernovas(trs, mag, fromDate.strftime('%Y/%m/%d'))
 
 supernovas.sort(key = lambda x : x.date, reverse=True)
 
