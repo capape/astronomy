@@ -56,7 +56,7 @@ def selectSupernovas(trs, maxMag, fromDate):
                 constellation = coord.get_constellation()
                 firstObserved = tr.contents[10].contents[0]
                 maxMagnitude = tr.contents[9].contents[0]
-                type =  tr.contents[8].contents[0]
+                type =  tr.contents[7].contents[0]
                               
 
                 link = 'https://www.rochesterastronomy.org/' + tr.contents[0].contents[0].get('href')[3:]
