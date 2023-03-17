@@ -9,8 +9,8 @@ import ssl
 from datetime import datetime, timedelta
 import sys
 import astropy.units as u
-class Supernova:
-    def __init__(self, date, mag, host, name, ra, decl, link, constellation, coordinates):
+class Supernova:          
+    def __init__(self, date, mag, host, name, ra, decl, link, constellation, coordinates, firstObserved, maxMagnitude, type):
         self.name = name
         self.date = date
         self.mag = mag
@@ -21,12 +21,16 @@ class Supernova:
         self.link = link
         self.constellation = constellation
         self.coordinates = coordinates
+        self.type = type
+        self.firstObserved = firstObserved
+        self.maxMagnitude = maxMagnitude
 
 
    
 
 def printSupernova(data):    
-        print('Date:', data.date, ',    Magnitude:', data.mag)
+        print('Date:', data.date, ',    Magnitude:', data.mag, ', Type: ', data.type)
+        print('     FIRST Date:', data.firstObserved, ',  MAX:  Magnitude:', data.maxMagnitude)
         print('     Const:', data.constellation,', Host:', data.host, ', Name:', data.name)
         print('     RA:', data.ra, ', DECL.', data.decl)
         print('     Goto: ', data.link)
@@ -50,9 +54,13 @@ def selectSupernovas(trs, maxMag, fromDate):
                 host = tr.contents[1].contents[0]                
                 coord=SkyCoord(ra, decl , frame='icrs', unit=(u.hourangle, u.deg))            
                 constellation = coord.get_constellation()
+                firstObserved = tr.contents[10].contents[0]
+                maxMagnitude = tr.contents[9].contents[0]
+                type =  tr.contents[8].contents[0]
+                              
 
                 link = 'https://www.rochesterastronomy.org/' + tr.contents[0].contents[0].get('href')[3:]
-                data = Supernova(date, mag, host, name, ra, decl, link, constellation, coord)
+                data = Supernova(date, mag, host, name, ra, decl, link, constellation, coord, firstObserved, maxMagnitude, type)
             
                 supernovas.append(data)
     return supernovas
