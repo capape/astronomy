@@ -55,8 +55,8 @@ def printSupernova(data):
     print('  Last azCoords az:', data.visibility.azCords[-1].coord.az.to_string(sep=' ',precision=2) ,
           ', lat:', data.visibility.azCords[-1].coord.alt.to_string(sep=' ',precision=2))
     print('')
-    print('  First observation date:', data.firstObserved, ', MAX Magnitude:', data.maxMagnitude, 'on: ', data.maxMagnitudeDate)   
-    print('  GOTO: ', data.link)    
+    print('  Discovered:', data.firstObserved, ', MAX Mag:', data.maxMagnitude, 'on: ', data.maxMagnitudeDate)   
+    print(' ', data.link)    
     print('')
 
 
