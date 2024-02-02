@@ -71,9 +71,9 @@ def printSupernovaShort(data):
 
 
 
-def selectSupernovas(trs, maxMag, observationDay, deltaDays, minAlt=25):
+def selectSupernovas(maxMag, observationDay, deltaDays, site, minAlt=25):
 
-    location = EarthLocation(lat=41.55*u.deg, lon=2.09*u.deg, height=224*u.m)
+    dataRows = getRochesterHtmlDataRows()
     
     fromDateTime = observationDay + timedelta(days=deltaDays)
     fromDate = fromDateTime.strftime('%Y-%m-%d')
@@ -83,37 +83,37 @@ def selectSupernovas(trs, maxMag, observationDay, deltaDays, minAlt=25):
     time1 = Time(observationStart)
     time2 = time1 + timedelta(hours=8)
 
-   
-    print('Supernovae from: ', fromDate, ' to now. Magnitud <=', maxMag) #, 'for location ', location)
+    print('Supernovae from: ', fromDate, ' to now. Magnitud <=', maxMag) #, 'for location ', location)    
+    print("Site: lon: {lon:.2f} lat: {lat:.2f} height: {height:.2f}m . Min alt {minAlt}º".format(lon=site.lon.value, lat=site.lat.value, height=site.height.value , minAlt=minAlt))
     print('')
 
     supernovas = []
-    for tr in trs:
-        if tr.contents[0].name == 'td':
-            mag = tr.contents[5].contents[0]
-            date = tr.contents[6].contents[0]
+    for dataRow in dataRows:
+        if dataRow.contents[0].name == 'td':
+            mag = dataRow.contents[5].contents[0]
+            date = dataRow.contents[6].contents[0]
 
             if (mag < maxMag and date > fromDate):
-                ra = tr.contents[2].contents[0]
-                decl = tr.contents[3].contents[0]
-                name = tr.contents[0].contents[0].contents[0]
-                host = tr.contents[1].contents[0]
+                ra = dataRow.contents[2].contents[0]
+                decl = dataRow.contents[3].contents[0]
+                name = dataRow.contents[0].contents[0].contents[0]
+                host = dataRow.contents[1].contents[0]
                 coord = SkyCoord(ra, decl, frame='icrs',
                                  unit=(u.hourangle, u.deg))
                 
                 
-                visibility = getVisibility(location, coord, time1, time2, minAlt = 25)
+                visibility = getVisibility(site, coord, time1, time2, minAlt)
 
                 if (visibility.visible):
 
                     constellation = coord.get_constellation()
-                    firstObserved = tr.contents[11].contents[0]
-                    maxMagnitudeDate = tr.contents[10].contents[0]
-                    maxMagnitude = tr.contents[9].contents[0]
-                    type = tr.contents[7].contents[0]
+                    firstObserved = dataRow.contents[11].contents[0]
+                    maxMagnitudeDate = dataRow.contents[10].contents[0]
+                    maxMagnitude = dataRow.contents[9].contents[0]
+                    type = dataRow.contents[7].contents[0]
 
                     link = 'https://www.rochesterastronomy.org/' + \
-                        tr.contents[0].contents[0].get('href')[3:]
+                        dataRow.contents[0].contents[0].get('href')[3:]
                     data = Supernova(date, mag, host, name, ra, decl, link,
                                      constellation, coord, firstObserved, maxMagnitude, maxMagnitudeDate, type, visibility)
 
@@ -121,13 +121,29 @@ def selectSupernovas(trs, maxMag, observationDay, deltaDays, minAlt=25):
 
     return supernovas
 
-def getVisibility(astrosabadell, coord, time1, time2, minAlt = 25):
+def getRochesterHtmlDataRows():
+    # Ignore ssl cert errors
+    ctx = ssl.create_default_context()
+    ctx.check_hostname = False
+    ctx.verify_mode = ssl.CERT_NONE
+    # url = 'https://www.physics.purdue.edu/brightsupernovae/snimages/sndate.html'
+    url = 'https://www.rochesterastronomy.org/snimages/snactive.html'
+    html = urllib.request.urlopen(url, context=ctx).read()
+    soup = BeautifulSoup(html, 'html.parser')
+
+    # Find all supernovae rows
+    trs = soup('tr')
+
+    return trs;
+
+
+def getVisibility(site, coord, time1, time2, minAlt = 25):
     
     visible = False
     loopTime = time1
     azVisibles = []
     while loopTime < time2:        
-        altaz = coord.transform_to(AltAz(obstime=loopTime,location=astrosabadell))
+        altaz = coord.transform_to(AltAz(obstime=loopTime,location=site))
         loopTime = loopTime + timedelta(hours=0.5)        
         if (altaz.alt.dms.d >= minAlt):            
             visible= True
@@ -143,18 +159,7 @@ if len(sys.argv) > 3:
 
 def main():
 
-    # Ignore ssl cert errors
-    ctx = ssl.create_default_context()
-    ctx.check_hostname = False
-    ctx.verify_mode = ssl.CERT_NONE
-    # url = 'https://www.physics.purdue.edu/brightsupernovae/snimages/sndate.html'
-    url = 'https://www.rochesterastronomy.org/snimages/snactive.html'
-    html = urllib.request.urlopen(url, context=ctx).read()
-    soup = BeautifulSoup(html, 'html.parser')
-
-    # Find all supernovae rows
-    trs = soup('tr')
-
+ 
     mag = '18'
     deltaDays = -15
 
@@ -164,8 +169,9 @@ def main():
     elif (len(sys.argv) == 2):
         mag = sys.argv[1]
 
+    site = EarthLocation(lat=41.55*u.deg, lon=2.09*u.deg, height=224*u.m)
 
-    supernovas = selectSupernovas(trs, mag, datetime.now(), deltaDays)
+    supernovas = selectSupernovas(mag, datetime.now(), deltaDays, site)
 
     
     
