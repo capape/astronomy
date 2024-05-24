@@ -14,6 +14,8 @@ import sys
 import astropy.units as u
 
 
+old=["AT2024cva","AT2024ccb","AT2024ajf","2024bhp","2023wcr","2023wrk","2023ixf","2024ana","2024axg"]
+
 class Supernova:
     def __init__(self, date, mag, host, name, ra, decl, link, constellation, coordinates, firstObserved, maxMagnitude, maxMagnitudeDate, type, visibility):
         self.name = name
@@ -71,14 +73,14 @@ def printSupernovaShort(data):
 
 
 
-def selectSupernovas(maxMag, observationDay, deltaDays, site, minAlt=25):
+def selectSupernovas(maxMag, observationDay, deltaDays, site, minAlt=0, maxAlt=90, minAz=0,maxAz=360):
 
     dataRows = getRochesterHtmlDataRows()
     
     fromDateTime = observationDay + timedelta(days=deltaDays)
     fromDate = fromDateTime.strftime('%Y-%m-%d')
 
-    observationStart = observationDay.strftime('%Y-%m-%d') + "T20:00Z"
+    observationStart = observationDay.strftime('%Y-%m-%d') + "T22:00Z"
     
     time1 = Time(observationStart)
     time2 = time1 + timedelta(hours=8)
@@ -102,9 +104,9 @@ def selectSupernovas(maxMag, observationDay, deltaDays, site, minAlt=25):
                                  unit=(u.hourangle, u.deg))
                 
                 
-                visibility = getVisibility(site, coord, time1, time2, minAlt)
+                visibility = getVisibility(site, coord, time1, time2, minAlt, maxAlt, minAz, maxAz)
 
-                if (visibility.visible):
+                if (visibility.visible and name not in old):
 
                     constellation = coord.get_constellation()
                     firstObserved = dataRow.contents[11].contents[0]
@@ -137,7 +139,7 @@ def getRochesterHtmlDataRows():
     return trs;
 
 
-def getVisibility(site, coord, time1, time2, minAlt = 25):
+def getVisibility(site, coord, time1, time2, minAlt = 0, maxAlt=90, minAz =0, maxAz=360):
     
     visible = False
     loopTime = time1
@@ -145,7 +147,7 @@ def getVisibility(site, coord, time1, time2, minAlt = 25):
     while loopTime < time2:        
         altaz = coord.transform_to(AltAz(obstime=loopTime,location=site))
         loopTime = loopTime + timedelta(hours=0.5)        
-        if (altaz.alt.dms.d >= minAlt):            
+        if (altaz.alt.dms.d >= minAlt and altaz.alt.dms.d <= maxAlt and altaz.az.dms.d >=minAz and altaz.az.dms.d<= maxAz ):            
             visible= True
             azVisibles.append(AxCordInTime(loopTime,altaz))
 
@@ -171,7 +173,8 @@ def main():
 
     site = EarthLocation(lat=41.55*u.deg, lon=2.09*u.deg, height=224*u.m)
 
-    supernovas = selectSupernovas(mag, datetime.now(), deltaDays, site)
+    supernovas = selectSupernovas(mag, datetime.now(), deltaDays, site, 25)
+    #supernovas = selectSupernovas(mag, datetime.now(), deltaDays, site, 25, 55, 180, 340)
 
     
     
