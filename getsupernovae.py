@@ -14,7 +14,39 @@ import sys
 import astropy.units as u
 
 
-old=["AT2024cva","AT2024ccb","AT2024ajf","2024bhp","2023wcr","2023wrk","2023ixf","2024ana","2024axg"]
+old=[
+    "2023ixf",
+    "2023wcr",
+    "2023wrk",
+    "2024akh",
+    "2024ana",
+    "2024axg",
+    "2024bhp",
+    "2024byg",
+    "2024cld",
+    "2024dlk",
+    "2024dru",
+    "2024drv",
+    "2024ehs",
+    "2024eys",
+    "2024fjp",
+    "2024gqf",
+    "2024gwq",
+    "2024gyr",
+    "2024hcj",
+    "2024iey",
+    "AT2024ajf",
+    "AT2024ccb",
+    "AT2024cva",
+    "AT2024dgr",
+    "AT2024ego",
+    "AT2024eqz",
+    "AT2024evp",
+    "AT2024fpe",
+    "AT2024gfh",
+    "AT2024iwq",
+    "Nova M31 2024-03b?"
+    ]
 
 class Supernova:
     def __init__(self, date, mag, host, name, ra, decl, link, constellation, coordinates, firstObserved, maxMagnitude, maxMagnitudeDate, type, visibility):
