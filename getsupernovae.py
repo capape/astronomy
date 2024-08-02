@@ -112,10 +112,10 @@ def selectSupernovas(maxMag, observationDay, deltaDays, site, minAlt=0, maxAlt=9
     fromDateTime = observationDay + timedelta(days=deltaDays)
     fromDate = fromDateTime.strftime('%Y-%m-%d')
 
-    observationStart = observationDay.strftime('%Y-%m-%d') + "T22:00Z"
+    observationStart = observationDay.strftime('%Y-%m-%d') + "T23:55Z"
     
     time1 = Time(observationStart)
-    time2 = time1 + timedelta(hours=8)
+    time2 = time1 + timedelta(hours=4)
 
     print('Supernovae from: ', fromDate, ' to now. Magnitud <=', maxMag) #, 'for location ', location)    
     print("Site: lon: {lon:.2f} lat: {lat:.2f} height: {height:.2f}m . Min alt {minAlt}º".format(lon=site.lon.value, lat=site.lat.value, height=site.height.value , minAlt=minAlt))
@@ -126,8 +126,10 @@ def selectSupernovas(maxMag, observationDay, deltaDays, site, minAlt=0, maxAlt=9
         if dataRow.contents[0].name == 'td':
             mag = dataRow.contents[5].contents[0]
             date = dataRow.contents[6].contents[0]
+            dateToCompare = date.replace('/','-')
+            fromDateToComare = fromDate.replace('/','-')
 
-            if (mag < maxMag and date > fromDate):
+            if (mag < maxMag and dateToCompare > fromDateToComare):
                 ra = dataRow.contents[2].contents[0]
                 decl = dataRow.contents[3].contents[0]
                 name = dataRow.contents[0].contents[0].contents[0]
