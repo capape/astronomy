@@ -2,7 +2,7 @@
 
 function split_name {
 
-    if [ "${LABEL}" = "Supernova" ]
+    if [ "${LABEL}" = "Supernova" ] || [ "${LABEL}" = "Comet" ]
     then
         echo "${1}"
         return
@@ -25,11 +25,11 @@ function split_name {
 function objectData {
     PREFIX="${2}"
     LABEL="${3}"
-    for objectFile in $(find ${1} -type f -name "${PREFIX}*PROCESSED.fit");
+    for objectFile in $(find "${1}" -type f -name "${PREFIX}*PROCESSED.fit");
     do
         DATE_OBS=$(fitsheader ${objectFile}  | grep DATE-OBS | sed -s "s/DATE-OBS=//" | sed -s "s/\/\sUT\s*//" | sed -s "s/ \/ Y.*//")
-        FILE_NAME=$(basename ${objectFile})
-        OBJECT_NAME=$(echo ${FILE_NAME} | sed -s "s/${PREFIX}_//" | sed -s "s/_PROCESSED.fit//")
+        FILE_NAME=$(basename "${objectFile}")        
+        OBJECT_NAME=$(echo "${FILE_NAME}" | sed -s "s/${PREFIX}_//" | sed -s "s/_PROCESSED.fit//")        
         for obj in $(split_name "${OBJECT_NAME}" "${LABEL}"); do 
             echo "${LABEL}: ${obj}, Date: ${DATE_OBS} "
         done
@@ -47,11 +47,16 @@ function supernovaData {
 function cluster {
     objectData "${1}" "CG_DS" "Cluster"
     objectData "${1}" "CO_DS" "Cluster"
+    objectData "${1}" "CUM_OB_DS" "Cluster"
 }
 
 function nebulae {
     objectData "${1}" "NP_DS" "Nebulae"  
     objectData "${1}" "NPN_DS" "Nebulae"  
+}
+
+function comet {
+    objectData "${1}" "COM_DS" "Comet" 
 }
 
 function quasar {
@@ -77,11 +82,12 @@ function countObject {
 }
 
 {
-    galaxyData ${1} 
-    supernovaData ${1}
-    cluster ${1}
-    nebulae ${1}
-    quasar ${1}
+    galaxyData "${1}" 
+    supernovaData "${1}"
+    cluster "${1}"
+    nebulae "${1}"
+    quasar "${1}"
+    comet "${1}"
 } > tmp-data.txt
 
 function getWeek {
@@ -104,6 +110,7 @@ countObject Supernova tmp-data.txt
 countObject Nebulae tmp-data.txt
 countObject Quasar tmp-data.txt
 countObject Cluster tmp-data.txt
+countObject Comet tmp-data.txt
 } | awk 'BEGIN{FS=":";total=0;printf("------------------\n");printf("Total observations\n");printf("------------------\n");}{printf("%-12s: %4d\n",$1,$2);total+=$2}END{printf("------------------\n");printf("%-12s: %4d\n","Total", total)}'
 
 {
@@ -112,6 +119,7 @@ countDistinctObject Supernova tmp-data.txt
 countDistinctObject Nebulae tmp-data.txt
 countDistinctObject Quasar tmp-data.txt
 countDistinctObject Cluster tmp-data.txt
+countDistinctObject Comet tmp-data.txt
 } | awk 'BEGIN{FS=":";total=0;printf("------------------\n");printf("Total objects\n");printf("------------------\n");}{printf("%-12s: %4d\n",$1,$2);total+=$2}END{printf("------------------\n");printf("%-12s: %4d\n","Total", total)}'
 
 
